@@ -1,0 +1,204 @@
+-- MySQL Workbench Forward Engineering
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Schema mydb
+-- -----------------------------------------------------
+-- -----------------------------------------------------
+-- Schema cleaningdb
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Schema cleaningdb
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `cleaningdb` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
+USE `cleaningdb` ;
+
+-- -----------------------------------------------------
+-- Table `cleaningdb`.`user`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cleaningdb`.`user` (
+  `user_id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NULL,
+  `email` VARCHAR(45) NULL,
+  `contactno` VARCHAR(45) NULL,
+  `address` VARCHAR(45) NULL,
+  `dob` VARCHAR(45) NULL,
+  `role` ENUM('customer', 'serviceprovider') NULL,
+  `gender` CHAR(1) NULL,
+  PRIMARY KEY (`user_id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `cleaningdb`.`admin`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cleaningdb`.`admin` (
+  `admin_id` INT NOT NULL AUTO_INCREMENT,
+  `admincol` VARCHAR(45) NULL DEFAULT NULL,
+  `user_id` INT NOT NULL,
+  PRIMARY KEY (`admin_id`),
+  UNIQUE INDEX `idadmin_UNIQUE` (`admin_id` ASC) VISIBLE,
+  INDEX `fk_admin_user1_idx` (`user_id` ASC) VISIBLE,
+  CONSTRAINT `fk_admin_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `cleaningdb`.`user` (`user_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `cleaningdb`.`customer`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cleaningdb`.`customer` (
+  `customer_id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  PRIMARY KEY (`customer_id`),
+  UNIQUE INDEX `idcustomer_UNIQUE` (`customer_id` ASC) VISIBLE,
+  INDEX `fk_customer_user_idx` (`user_id` ASC) VISIBLE,
+  CONSTRAINT `fk_customer_user`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `cleaningdb`.`user` (`user_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `cleaningdb`.`serviceprovider`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cleaningdb`.`serviceprovider` (
+  `serviceprovider_id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  PRIMARY KEY (`serviceprovider_id`),
+  UNIQUE INDEX `serviceprovider_id_UNIQUE` (`serviceprovider_id` ASC) VISIBLE,
+  INDEX `fk_serviceprovider_user1_idx` (`user_id` ASC) VISIBLE,
+  CONSTRAINT `fk_serviceprovider_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `cleaningdb`.`user` (`user_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `cleaningdb`.`category`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cleaningdb`.`category` (
+  `category_id` INT NOT NULL AUTO_INCREMENT,
+  `catname` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`category_id`),
+  UNIQUE INDEX `category_id_UNIQUE` (`category_id` ASC) VISIBLE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cleaningdb`.`services`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cleaningdb`.`services` (
+  `services_id` INT NOT NULL AUTO_INCREMENT,
+  `serviceprovider_id` INT NOT NULL,
+  `category_id` INT NOT NULL,
+  `desc` VARCHAR(70) NOT NULL,
+  `price` DECIMAL NOT NULL,
+  PRIMARY KEY (`services_id`),
+  UNIQUE INDEX `idservices_UNIQUE` (`services_id` ASC) VISIBLE,
+  INDEX `fk_services_serviceprovider1_idx` (`serviceprovider_id` ASC) VISIBLE,
+  INDEX `fk_services_category1_idx` (`category_id` ASC) VISIBLE,
+  CONSTRAINT `fk_services_serviceprovider1`
+    FOREIGN KEY (`serviceprovider_id`)
+    REFERENCES `cleaningdb`.`serviceprovider` (`serviceprovider_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_services_category1`
+    FOREIGN KEY (`category_id`)
+    REFERENCES `cleaningdb`.`category` (`category_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cleaningdb`.`order`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cleaningdb`.`order` (
+  `order_id` INT NOT NULL AUTO_INCREMENT,
+  `services_id` INT NOT NULL,
+  `customer_id` INT NOT NULL,
+  PRIMARY KEY (`order_id`),
+  UNIQUE INDEX `order_id_UNIQUE` (`order_id` ASC) VISIBLE,
+  INDEX `fk_order_services1_idx` (`services_id` ASC) VISIBLE,
+  INDEX `fk_order_customer1_idx` (`customer_id` ASC) VISIBLE,
+  CONSTRAINT `fk_order_services1`
+    FOREIGN KEY (`services_id`)
+    REFERENCES `cleaningdb`.`services` (`services_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_order_customer1`
+    FOREIGN KEY (`customer_id`)
+    REFERENCES `cleaningdb`.`customer` (`customer_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cleaningdb`.`logs`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cleaningdb`.`logs` (
+  `log_id` INT NOT NULL AUTO_INCREMENT,
+  `login` VARCHAR(45) NULL,
+  `logout` VARCHAR(45) NULL,
+  `user_id` INT NOT NULL,
+  PRIMARY KEY (`log_id`),
+  UNIQUE INDEX `log_is_UNIQUE` (`log_id` ASC) VISIBLE,
+  INDEX `fk_logs_user1_idx` (`user_id` ASC) VISIBLE,
+  CONSTRAINT `fk_logs_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `cleaningdb`.`user` (`user_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cleaningdb`.`feedback`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cleaningdb`.`feedback` (
+  `feedback_id` INT NOT NULL AUTO_INCREMENT,
+  `serviceprovider_id` INT NOT NULL,
+  `customer_id` INT NOT NULL,
+  `rating` INT NOT NULL,
+  `desc` VARCHAR(60) NULL,
+  PRIMARY KEY (`feedback_id`),
+  UNIQUE INDEX `feedback_id_UNIQUE` (`feedback_id` ASC) VISIBLE,
+  INDEX `fk_feedback_serviceprovider1_idx` (`serviceprovider_id` ASC) VISIBLE,
+  INDEX `fk_feedback_customer1_idx` (`customer_id` ASC) VISIBLE,
+  CONSTRAINT `fk_feedback_serviceprovider1`
+    FOREIGN KEY (`serviceprovider_id`)
+    REFERENCES `cleaningdb`.`serviceprovider` (`serviceprovider_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_feedback_customer1`
+    FOREIGN KEY (`customer_id`)
+    REFERENCES `cleaningdb`.`customer` (`customer_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
